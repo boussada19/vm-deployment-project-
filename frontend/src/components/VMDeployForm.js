@@ -15,6 +15,7 @@ const VMDeployForm = () => {
     firewallPolicy: ''
   });
   const [existingPolicies, setExistingPolicies] = useState([]);
+  const [vmSpecs, setVmSpecs] = useState(null);
 
   // Fetch existing FortiGate firewall policies on component mount
   useEffect(() => {
@@ -49,12 +50,20 @@ const VMDeployForm = () => {
       try {
         const response = await axios.post('http://localhost:3001/api/create-fortigate-policy', { name: newPolicyName });
         alert('FortiGate firewall policy created: ' + response.data.message);
-        // Refresh policies
         const fetchResponse = await axios.get('http://localhost:3001/api/fortigate-policies');
         setExistingPolicies(fetchResponse.data.policies || []);
       } catch (error) {
         alert('Error creating policy: ' + (error.response?.data?.error || 'Unknown error'));
       }
+    }
+  };
+
+  const handleMonitoring = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/api/vm-specs', { params: { ip: formData.ip } });
+      setVmSpecs(response.data.specs);
+    } catch (error) {
+      alert('Error fetching VM specs: ' + (error.response?.data?.error || 'Unknown error'));
     }
   };
 
@@ -107,7 +116,18 @@ const VMDeployForm = () => {
           </button>
         </div>
         <button type="submit">Deploy VM</button>
+        <button type="button" onClick={handleMonitoring} style={{ marginLeft: '10px' }}>
+          Monitoring
+        </button>
       </form>
+      {vmSpecs && (
+        <div style={{ marginTop: '20px' }}>
+          <h3>VM Specifications</h3>
+          <p>CPU Usage: {vmSpecs.cpuUsage}%</p>
+          <p>Memory Usage: {vmSpecs.memoryUsage} MB</p>
+          <p>Disk Usage: {vmSpecs.diskUsage} GB</p>
+        </div>
+      )}
     </div>
   );
 };
