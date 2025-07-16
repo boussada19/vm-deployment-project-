@@ -3,10 +3,16 @@ const { exec } = require('child_process');
 const fs = require('fs').promises;
 const axios = require('axios');
 const app = express();
+const cors = require('cors'); // Add this line
+
+// Enable CORS for all routes (or specify origins)
+app.use(cors({
+  origin: 'http://localhost:3000' // Allow requests from the front-end origin
+}));
 
 app.use(express.json());
 
-app.post('/deploy', async (req, res) => {
+app.post('/api/deploy', async (req, res) => {
   const { template, cpu, memory, disk, ip, gateway, dns, name } = req.body;
 
   // Validate IP (placeholder: implement actual validation)
