@@ -16,6 +16,7 @@ const VMDeployForm = () => {
   });
   const [existingPolicies, setExistingPolicies] = useState([]);
 
+  // Fetch existing FortiGate firewall policies on component mount
   useEffect(() => {
     const fetchPolicies = async () => {
       try {
@@ -48,6 +49,7 @@ const VMDeployForm = () => {
       try {
         const response = await axios.post('http://localhost:3001/api/create-fortigate-policy', { name: newPolicyName });
         alert('FortiGate firewall policy created: ' + response.data.message);
+        // Refresh policies
         const fetchResponse = await axios.get('http://localhost:3001/api/fortigate-policies');
         setExistingPolicies(fetchResponse.data.policies || []);
       } catch (error) {
