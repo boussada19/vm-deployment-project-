@@ -4,20 +4,27 @@ const fs = require('fs').promises;
 const path = require('path');
 const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config(); // For secure token storage
+require('dotenv').config();
 
 const app = express();
 
 app.use(cors({ origin: 'http://localhost:3000' }));
 app.use(express.json());
 
+const FORTIGATE_TOKEN = process.env.FORTIGATE_TOKEN;
+const FORTIGATE_ADDRESS = process.env.FORTIGATE_ADDRESS;
+
+if (!FORTIGATE_TOKEN || !FORTIGATE_ADDRESS) {
+  console.error('FORTIGATE_TOKEN or FORTIGATE_ADDRESS is not set in .env file');
+  process.exit(1);
+}
+
 // Endpoint to get existing FortiGate firewall policies
 app.get('/api/fortigate-policies', async (req, res) => {
   try {
-    const response = await axios.get('https://10.0.1.50/api/v2/cmdb/firewall/policy', {
-      auth: {
-        username: 'administrator@vsphere.local',
-        password: 'y#1>hwAsr%r,sx1'
+    const response = await axios.get(`https://${FORTIGATE_ADDRESS}/api/v2/cmdb/firewall/policy`, {
+      headers: {
+        'Authorization': `Bearer ${FORTIGATE_TOKEN}`
       },
       httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
     });
@@ -46,10 +53,9 @@ app.post('/api/create-fortigate-policy', async (req, res) => {
       service: ['ALL'],
       status: 'enable'
     };
-    await axios.post('https://10.0.1.50/api/v2/cmdb/firewall/policy', payload, {
-      auth: {
-        username: 'administrator@vsphere.local',
-        password: 'y#1>hwAsr%r,sx1'
+    await axios.post(`https://${FORTIGATE_ADDRESS}/api/v2/cmdb/firewall/policy`, payload, {
+      headers: {
+        'Authorization': `Bearer ${FORTIGATE_TOKEN}`
       },
       httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
     });
@@ -91,10 +97,15 @@ app.post('/api/deploy', async (req, res) => {
         return res.status(500).json({ error: stderr });
       }
       console.log(`Terraform Output: ${stdout}`);
-      // Placeholder for applying FortiGate policy (requires additional logic)
       if (firewallPolicy && ip) {
         console.log(`Applying FortiGate policy ${firewallPolicy} to VM IP ${ip}`);
-        // Add API call to update policy with VM IP if needed
+        // Placeholder for API call to update policy with VM IP
+        // await axios.put(`https://${FORTIGATE_ADDRESS}/api/v2/cmdb/firewall/policy/${firewallPolicy}`, {
+        //   srcaddr: [ip]
+        // }, {
+        //   headers: { 'Authorization': `Bearer ${FORTIGATE_TOKEN}` },
+        //   httpsAgent: new (require('https').Agent)({ rejectUnauthorized: false })
+        // });
       }
       res.json({ message: 'VM deployment started', output: stdout });
     });
