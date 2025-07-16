@@ -56,3 +56,9 @@ variable "dns" {
   type        = string
   description = "DNS server IP"
 }
+
+variable "firewall_policy" {
+  type        = string
+  description = "FortiGate firewall policy to apply"
+  default     = "default-policy"
+}
