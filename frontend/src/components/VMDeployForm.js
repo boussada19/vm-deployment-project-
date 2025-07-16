@@ -12,11 +12,10 @@ const VMDeployForm = () => {
     ip: '10.0.1.85',
     gateway: '10.0.1.1',
     dns: '10.0.1.70',
-    firewallPolicy: '' // New field for FortiGate firewall policy
+    firewallPolicy: ''
   });
-  const [existingPolicies, setExistingPolicies] = useState([]); // Store existing policies
+  const [existingPolicies, setExistingPolicies] = useState([]);
 
-  // Fetch existing firewall policies on component mount
   useEffect(() => {
     const fetchPolicies = async () => {
       try {
@@ -49,7 +48,6 @@ const VMDeployForm = () => {
       try {
         const response = await axios.post('http://localhost:3001/api/create-fortigate-policy', { name: newPolicyName });
         alert('FortiGate firewall policy created: ' + response.data.message);
-        // Refresh policies
         const fetchResponse = await axios.get('http://localhost:3001/api/fortigate-policies');
         setExistingPolicies(fetchResponse.data.policies || []);
       } catch (error) {
